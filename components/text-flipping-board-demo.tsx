@@ -331,6 +331,7 @@ export default function TextFlippingBoardDemo() {
       musicSelection={musicSelection}
       playMusic={playMusic}
       playTrigger={playTrigger}
+      musicBlocked={musicBlocked}
       showToast={showToast}
       toastMessage={toastMessage}
       onActiveStepIndexChange={handleActiveStepIndexChange}

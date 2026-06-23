@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { resolveZingStreamUrl } from "@/lib/zing-stream-url";
 
 export const runtime = "nodejs";
@@ -7,21 +8,21 @@ export async function GET(request: Request) {
   const id = searchParams.get("id")?.trim();
 
   if (!id) {
-    return Response.json(
+    return NextResponse.json(
       { success: false, error: "Query parameter 'id' is required" },
       { status: 400 },
     );
   }
 
   try {
-    const streamUrl = await resolveZingStreamUrl(id);
-    return Response.redirect(streamUrl, 302);
+    const url = await resolveZingStreamUrl(id);
+    return NextResponse.json({ success: true, url });
   } catch (error) {
-    console.error("Zing stream error:", error);
-    return Response.json(
+    console.error("Zing stream-url error:", error);
+    return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Stream failed",
+        error: error instanceof Error ? error.message : "Stream URL failed",
       },
       { status: 500 },
     );
