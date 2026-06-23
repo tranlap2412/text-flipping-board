@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { ZING_API_ENABLED } from "@/lib/deploy";
 import type { MusicSelection } from "@/lib/music-types";
 import { decodeShareFromSearchParams, isShareUrl } from "@/lib/share-url";
 import type { BoardStep, StepAdvanceMode } from "@/lib/steps";
@@ -56,7 +55,6 @@ export function useBoardUrlBootstrap({
 
       const song = decoded.musicSelection.onlineSong;
       if (
-        ZING_API_ENABLED &&
         decoded.musicSelection.mode === "online" &&
         song &&
         song.name === "Zing MP3 Track"

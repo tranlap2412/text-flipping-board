@@ -33,22 +33,3 @@ export const DEFAULT_MUSIC_ID = MUSIC_PRESETS[0].id;
 export function findPresetById(id: string): MusicPreset | undefined {
   return MUSIC_PRESETS.find((preset) => preset.id === id);
 }
-
-export function findPresetByUrl(url: string): MusicPreset | undefined {
-  return MUSIC_PRESETS.find((preset) => preset.url === url);
-}
-
-export function resolveMusicFromParam(param: string): MusicPreset {
-  const byId = findPresetById(param);
-  if (byId) return byId;
-
-  try {
-    const decoded = decodeURIComponent(param);
-    const byUrl = findPresetByUrl(decoded);
-    if (byUrl) return byUrl;
-  } catch {
-    // ignore malformed params
-  }
-
-  return MUSIC_PRESETS[0];
-}

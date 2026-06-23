@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ZING_API_ENABLED } from "@/lib/deploy";
 import { MUSIC_PRESETS } from "@/lib/music-presets";
 import { musicCopy } from "@/lib/content";
 import {
@@ -109,25 +108,22 @@ export function MusicControls({
       </div>
 
       <Tabs
-        value={ZING_API_ENABLED ? selection.mode : "preset"}
+        value={selection.mode}
         onValueChange={(mode) => {
-          if (!ZING_API_ENABLED) return;
           onSelectionChange({
             ...selection,
             mode: mode as MusicSelection["mode"],
           });
         }}
       >
-        {ZING_API_ENABLED ? (
-          <TabsList className="w-full">
-            <TabsTrigger value="preset" className="flex-1">
-              Presets
-            </TabsTrigger>
-            <TabsTrigger value="online" className="flex-1">
-              Zing MP3
-            </TabsTrigger>
-          </TabsList>
-        ) : null}
+        <TabsList className="w-full">
+          <TabsTrigger value="preset" className="flex-1">
+            Presets
+          </TabsTrigger>
+          <TabsTrigger value="online" className="flex-1">
+            Zing MP3
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="preset" className="mt-3 flex flex-col gap-2">
           <p className="text-xs text-muted-foreground">{musicCopy.presetsNote}</p>
@@ -145,8 +141,7 @@ export function MusicControls({
           </Select>
         </TabsContent>
 
-        {ZING_API_ENABLED ? (
-          <TabsContent value="online" className="mt-3 flex flex-col gap-2">
+        <TabsContent value="online" className="mt-3 flex flex-col gap-2">
             <div className="flex items-center gap-1.5">
               <Globe className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">{musicCopy.zingHint}</span>
@@ -221,7 +216,6 @@ export function MusicControls({
               </div>
             )}
           </TabsContent>
-        ) : null}
       </Tabs>
 
       <BackgroundMusicPlayer

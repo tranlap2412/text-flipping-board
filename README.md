@@ -22,28 +22,46 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Deploy on Vercel
+## Deploy (standalone — VPS / hosting VN)
 
-1. Push to [github.com/tranlap2412/text-flipping-board](https://github.com/tranlap2412/text-flipping-board).
-2. Import the project in [Vercel](https://vercel.com/new) — **Next.js** is auto-detected.
-3. Build: `yarn build` · Install: `yarn install`.
-4. Add environment variable (recommended):
+Zing MP3 streaming needs a **server in Vietnam**. Build a self-contained bundle and run it on your VPS or VN hosting with Node.js 20+.
 
-| Variable               | Value                                    |
-| ---------------------- | ---------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL` | `https://text-flipping-board.vercel.app` |
+```bash
+yarn install
+yarn build
+```
 
-5. Deploy. Zing MP3 routes (`/api/zing/*`) run as serverless functions in **Singapore (`sin1`)** — see `vercel.json`. After deploy, test Zing stream: `/api/zing/debug?id=ZZEEOWEW` (expect `streaming.err: 0` if the region fix works).
+This produces:
+
+- `.next/standalone/` — run directly on the server
+- `dist/text-flipping-board-v{version}-{YYYYMMDD}.tar.gz` — upload this to VPS
+
+On the server:
+
+```bash
+tar -xzf text-flipping-board-v0.1.0-20250623.tar.gz
+cd standalone
+PORT=3000 node server.js
+```
+
+Optional env:
+
+| Variable               | Value                         |
+| ---------------------- | ----------------------------- |
+| `NEXT_PUBLIC_SITE_URL` | `https://your-domain.vn`      |
+| `PORT`                 | `3000` (or your reverse proxy)|
+
+Put nginx/Caddy in front for HTTPS.
 
 No database required — share links encode board state in the URL.
 
 ## Scripts
 
 ```bash
-yarn dev      # development server
-yarn build    # production build
-yarn start    # serve production build
-yarn lint     # ESLint
+yarn dev              # development server
+yarn build            # standalone production build
+yarn start:standalone # run .next/standalone/server.js (after build)
+yarn lint             # ESLint
 ```
 
 ## Stack

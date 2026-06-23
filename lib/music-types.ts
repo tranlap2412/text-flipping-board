@@ -3,7 +3,6 @@ import {
   findPresetById,
   type MusicPreset,
 } from "@/lib/music-presets";
-import { ZING_API_ENABLED } from "@/lib/deploy";
 
 export type MusicSourceMode = "preset" | "online";
 
@@ -36,16 +35,8 @@ export const DEFAULT_MUSIC_SELECTION: MusicSelection = {
 };
 
 export function getMusicPlaybackUrl(selection: MusicSelection): string {
-  if (
-    ZING_API_ENABLED &&
-    selection.mode === "online" &&
-    selection.onlineSong
-  ) {
+  if (selection.mode === "online" && selection.onlineSong) {
     return `/api/zing/stream?id=${encodeURIComponent(selection.onlineSong.id)}`;
-  }
-  if (selection.mode === "online" && selection.onlineSong && !ZING_API_ENABLED) {
-    const preset = findPresetById(selection.presetId);
-    return preset?.url ?? findPresetById(DEFAULT_MUSIC_ID)!.url;
   }
   const preset = findPresetById(selection.presetId);
   return preset?.url ?? findPresetById(DEFAULT_MUSIC_ID)!.url;
