@@ -4,3 +4,7 @@ import { Client } from "@khang07/zing-mp3-api";
 export function getZingClient(): Client {
   return new Client();
 }
+
+export function getZingClientCtime(client: Client): string {
+  return (client as unknown as { ctime: string }).ctime;
+}

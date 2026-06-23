@@ -1,5 +1,9 @@
 import { Readable } from "node:stream";
-import { getZingClient } from "@/lib/zing-client";
+import { getZingClient, getZingClientCtime } from "@/lib/zing-client";
+import {
+  buildZingStreamDebug,
+  logZingStreamEvent,
+} from "@/lib/zing-error";
 
 export const runtime = "nodejs";
 
@@ -14,9 +18,28 @@ export async function GET(request: Request) {
     );
   }
 
+  const client = getZingClient();
+  const clientCtime = getZingClientCtime(client);
+
   try {
-    const stream = await getZingClient().music(id);
+    logZingStreamEvent("info", {
+      event: "start",
+      songId: id,
+      clientCtime,
+      clientCtimeAgeSec: Math.max(
+        0,
+        Math.floor(Date.now() / 1000) - Number.parseInt(clientCtime, 10),
+      ),
+    });
+
+    const stream = await client.music(id);
     const webStream = Readable.toWeb(stream) as ReadableStream;
+
+    logZingStreamEvent("info", {
+      event: "ok",
+      songId: id,
+      clientCtime,
+    });
 
     return new Response(webStream, {
       headers: {
@@ -25,11 +48,19 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Zing stream error:", error);
+    const debug = buildZingStreamDebug(id, clientCtime, error);
+
+    logZingStreamEvent("error", {
+      event: "fail",
+      ...debug,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
     return Response.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Stream failed",
+        error: debug.message,
+        debug,
       },
       { status: 500 },
     );
