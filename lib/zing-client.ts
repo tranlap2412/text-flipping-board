@@ -1,7 +1,6 @@
-import client from "@khang07/zing-mp3-api";
+import { Client } from "@khang07/zing-mp3-api";
 
-let zingClient = client;
-
-export function getZingClient() {
-  return zingClient;
+/** Fresh client per request — module singleton ctime goes stale on warm serverless isolates. */
+export function getZingClient(): Client {
+  return new Client();
 }

@@ -1,8 +1,9 @@
 import { Client, createSignature } from "@khang07/zing-mp3-api";
 import { getZingClient } from "@/lib/zing-client";
 
-interface ZingApiResponse {
+interface ZingStreamResponse {
   err: number;
+  msg?: string;
   data?: {
     "128"?: string;
     "320"?: string;
@@ -17,7 +18,7 @@ interface ZingApiResponse {
 interface ZingClientInternal {
   ctime: string;
   instance: {
-    get: (url: string, config?: object) => Promise<ZingApiResponse>;
+    get: (url: string, config?: object) => Promise<ZingStreamResponse>;
   };
 }
 
@@ -30,7 +31,7 @@ export async function resolveZingStreamUrl(musicId: string): Promise<string> {
   const client = getZingClient() as unknown as ZingClientInternal;
   await client.instance.get("/");
 
-  const response = await client.instance.get(Client.API_MUSIC_PATH, {
+  const response = (await client.instance.get(Client.API_MUSIC_PATH, {
     params: {
       id,
       sig: createSignature(
@@ -43,7 +44,13 @@ export async function resolveZingStreamUrl(musicId: string): Promise<string> {
         Client.SECRET_KEY_V1,
       ),
     },
-  });
+  })) as ZingStreamResponse;
+
+  if (response.err !== 0 && response.err !== -1150) {
+    throw new Error(
+      response.msg?.trim() || `Zing streaming failed (err ${response.err})`,
+    );
+  }
 
   let musicURL =
     response.data?.["320"] && response.data["320"] !== "VIP"
@@ -70,7 +77,7 @@ async function resolveVipStreamUrl(
       throw new Error("This track requires VIP on Zing MP3");
     }
 
-    const retryData = await client.instance.get(Client.EXTRA_API_MUSIC_PATH, {
+    const retryData = (await client.instance.get(Client.EXTRA_API_MUSIC_PATH, {
       params: {
         id,
         api_key: Client.API_KEY_V3,
@@ -85,7 +92,7 @@ async function resolveVipStreamUrl(
         version: undefined,
         apiKey: undefined,
       },
-    });
+    })) as ZingStreamResponse;
 
     if (retryData.err === 0) {
       return retryData.data?.streaming?.default?.["128"];
