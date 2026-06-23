@@ -1,14 +1,16 @@
 import {
   parseMusicParam,
-  serializeMusicParam,
   type MusicSelection,
 } from "@/lib/music-types";
 import {
-  decodeStepsPayload,
-  encodeStepsPayload,
-  type StepAdvanceMode,
-  type BoardStep,
-} from "@/lib/steps";
+  decodeShareFromSearchParams,
+  encodeShareToken,
+  isShareUrl,
+  type DecodedShareState,
+} from "@/lib/share-payload";
+import { decodeStepsPayload, type StepAdvanceMode, type BoardStep } from "@/lib/steps";
+
+export type { DecodedShareState };
 
 export interface SharedBoardPayload {
   steps: BoardStep[];
@@ -33,6 +35,7 @@ export function parseBoardSearchParams(
   const musicParam = params.get("music");
   const stepParam = params.get("step");
   const lockParam = params.get("lock")?.trim() || null;
+  const compactParam = params.get("d");
 
   let sharedPayload: SharedBoardPayload | null = null;
   if (dataParam) {
@@ -54,7 +57,7 @@ export function parseBoardSearchParams(
     }
   }
 
-  const isSharedView = Boolean(dataParam);
+  const isSharedView = Boolean(compactParam || dataParam);
   const cinematic = viewParam === "cinematic" || isSharedView;
 
   return {
@@ -67,7 +70,7 @@ export function parseBoardSearchParams(
   };
 }
 
-export function buildShareUrl(
+export async function buildShareUrl(
   origin: string,
   pathname: string,
   steps: BoardStep[],
@@ -75,18 +78,17 @@ export function buildShareUrl(
   autoInterval: number,
   musicSelection: MusicSelection,
   passwordHash?: string | null,
-): string {
-  const encoded = encodeStepsPayload(steps, advanceMode, autoInterval);
-  const music = serializeMusicParam(musicSelection);
-  const params = new URLSearchParams({
-    data: encoded,
-    view: "cinematic",
-    music,
-  });
+): Promise<string> {
+  const token = await encodeShareToken(
+    steps,
+    advanceMode,
+    autoInterval,
+    musicSelection,
+    passwordHash,
+  );
 
-  if (passwordHash) {
-    params.set("lock", passwordHash);
-  }
-
+  const params = new URLSearchParams({ d: token });
   return `${origin}${pathname}?${params.toString()}`;
 }
+
+export { decodeShareFromSearchParams, encodeShareToken, isShareUrl };

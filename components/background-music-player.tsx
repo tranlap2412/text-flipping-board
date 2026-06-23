@@ -16,21 +16,33 @@ export function BackgroundMusicPlayer({
   url,
   playing,
   playTrigger = 0,
-  autoPlay = false,
   onPlayBlocked,
   onPlayStarted,
   hidden = false,
 }: BackgroundMusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const onPlayBlockedRef = useRef(onPlayBlocked);
+  const onPlayStartedRef = useRef(onPlayStarted);
+  const lastPlayTriggerRef = useRef(playTrigger);
+
+  onPlayBlockedRef.current = onPlayBlocked;
+  onPlayStartedRef.current = onPlayStarted;
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.load();
-
     if (!playing) {
       audio.pause();
+      return;
+    }
+
+    const shouldRestart = playTrigger !== lastPlayTriggerRef.current;
+    lastPlayTriggerRef.current = playTrigger;
+
+    if (shouldRestart) {
+      audio.currentTime = 0;
+    } else if (!audio.paused) {
       return;
     }
 
@@ -42,7 +54,7 @@ export function BackgroundMusicPlayer({
       try {
         audio.muted = false;
         await audio.play();
-        onPlayStarted?.();
+        onPlayStartedRef.current?.();
         return;
       } catch {
         // Muted autoplay is allowed in most browsers; unmute once playback starts.
@@ -52,10 +64,9 @@ export function BackgroundMusicPlayer({
         audio.muted = true;
         await audio.play();
         audio.muted = false;
-        onPlayStarted?.();
-        return;
+        onPlayStartedRef.current?.();
       } catch {
-        onPlayBlocked?.();
+        onPlayBlockedRef.current?.();
       }
     };
 
@@ -75,14 +86,13 @@ export function BackgroundMusicPlayer({
       cancelled = true;
       audio.removeEventListener("canplay", onCanPlay);
     };
-  }, [url, playing, playTrigger, onPlayBlocked, onPlayStarted]);
+  }, [url, playing, playTrigger]);
 
   return (
     <audio
       ref={audioRef}
       src={url}
       loop
-      autoPlay={autoPlay && playing}
       preload="auto"
       playsInline
       className={hidden ? "hidden" : "w-full"}

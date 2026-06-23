@@ -15,6 +15,11 @@ export function normalizeBoardText(text: string): string {
   return text.normalize("NFC");
 }
 
+/** Uppercase for editor input — vi-VN keeps Vietnamese diacritics correct */
+export function toBoardInputText(text: string): string {
+  return normalizeBoardText(text).toLocaleUpperCase("vi-VN");
+}
+
 export function normalizeFlapChar(char: string): string {
   if (char === " ") return " ";
   const upper = char.normalize("NFC").toLocaleUpperCase("vi-VN");

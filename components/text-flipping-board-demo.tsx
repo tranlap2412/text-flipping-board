@@ -80,6 +80,14 @@ export default function TextFlippingBoardDemo() {
     setMusicBlocked(false);
   }, []);
 
+  const handleMusicPlayStarted = useCallback(() => {
+    setMusicBlocked(false);
+  }, []);
+
+  const handleMusicPlayBlocked = useCallback(() => {
+    setMusicBlocked(true);
+  }, []);
+
   useBoardUrlBootstrap({
     onSharedPayload: ({ steps: loadedSteps, advanceMode, autoInterval }) => {
       const cloned = cloneSteps(loadedSteps);
@@ -182,7 +190,7 @@ export default function TextFlippingBoardDemo() {
       passwordHash = await hashSharePassword(sharePassword);
     }
 
-    const shareUrl = buildShareUrl(
+    const shareUrl = await buildShareUrl(
       window.location.origin,
       window.location.pathname,
       steps,
@@ -266,8 +274,8 @@ export default function TextFlippingBoardDemo() {
           onStepPrev={handleBoardStepPrev}
           onStepNext={handleBoardStepNext}
           onPlayRequest={requestMusicPlay}
-          onPlayBlocked={() => setMusicBlocked(true)}
-          onPlayStarted={() => setMusicBlocked(false)}
+          onPlayBlocked={handleMusicPlayBlocked}
+          onPlayStarted={handleMusicPlayStarted}
         />
         {!isSharedView && (
           <Button
@@ -319,7 +327,7 @@ export default function TextFlippingBoardDemo() {
       onMusicSelectionChange={setMusicSelection}
       onPlayMusicChange={setPlayMusic}
       onPlayRequest={requestMusicPlay}
-      onPlayBlocked={() => setMusicBlocked(true)}
+      onPlayBlocked={handleMusicPlayBlocked}
       sharePasswordEnabled={sharePasswordEnabled}
       sharePassword={sharePassword}
       onSharePasswordEnabledChange={setSharePasswordEnabled}

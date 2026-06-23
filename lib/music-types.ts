@@ -20,13 +20,13 @@ export interface MusicSelection {
   onlineSong: OnlineSong | null;
 }
 
-/** Default: Shakira — Waka Waka (Esto Es Africa) (K-Mix) on Zing MP3 */
+/** Default: Shakira, Burna Boy — Dai Dai on Zing MP3 */
 export const DEFAULT_ONLINE_SONG: OnlineSong = {
-  id: "ZWZ9EOIO",
-  name: "Waka Waka (Esto Es Africa) (K-Mix)",
-  artist: "Shakira",
+  id: "Z90WZ9WB",
+  name: "Dai Dai",
+  artist: "Shakira, Burna Boy",
   thumbnail:
-    "https://photo-resize-zmp3.zmdcdn.me/w94_r1x1_jpeg/cover/3/2/a/3/32a35f4d26ee56366397c09953f6c269.jpg",
+    "https://photo-resize-zmp3.zmdcdn.me/w94_r1x1_jpeg/cover/4/7/9/6/47964f4161489bdc525a82eb7ead1882.jpg",
 };
 
 export const DEFAULT_MUSIC_SELECTION: MusicSelection = {

@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { ZING_API_ENABLED } from "@/lib/deploy";
-import { parseBoardSearchParams } from "@/lib/share-url";
 import type { MusicSelection } from "@/lib/music-types";
+import { decodeShareFromSearchParams, isShareUrl } from "@/lib/share-url";
 import type { BoardStep, StepAdvanceMode } from "@/lib/steps";
 
 interface BoardUrlBootstrapOptions {
@@ -28,30 +28,45 @@ export function useBoardUrlBootstrap({
   onPasswordHash,
 }: BoardUrlBootstrapOptions): void {
   useEffect(() => {
-    const parsed = parseBoardSearchParams(
-      new URLSearchParams(window.location.search),
-    );
+    const params = new URLSearchParams(window.location.search);
 
-    if (parsed.sharedPayload) {
-      onSharedView(true);
-      onSharedPayload(parsed.sharedPayload);
+    if (!isShareUrl(params)) return;
+
+    onSharedView(true);
+    onCinematic(true);
+
+    const stepParam = params.get("step");
+    if (stepParam) {
+      const idx = parseInt(stepParam, 10);
+      if (!Number.isNaN(idx) && idx >= 0) {
+        onStepIndex(idx);
+      }
     }
 
-    if (parsed.musicSelection) {
-      onMusicSelection(parsed.musicSelection);
+    void decodeShareFromSearchParams(params).then((decoded) => {
+      if (!decoded) return;
 
-      const song = parsed.musicSelection.onlineSong;
+      onSharedPayload({
+        steps: decoded.steps,
+        advanceMode: decoded.advanceMode,
+        autoInterval: decoded.autoInterval,
+      });
+      onMusicSelection(decoded.musicSelection);
+      onPasswordHash(decoded.passwordHash);
+
+      const song = decoded.musicSelection.onlineSong;
       if (
         ZING_API_ENABLED &&
-        parsed.musicSelection.mode === "online" &&
-        song
+        decoded.musicSelection.mode === "online" &&
+        song &&
+        song.name === "Zing MP3 Track"
       ) {
         fetch(`/api/zing/song?id=${encodeURIComponent(song.id)}`)
           .then((res) => res.json())
           .then((body) => {
             if (body.success && body.data) {
               onMusicSelection({
-                ...parsed.musicSelection!,
+                ...decoded.musicSelection,
                 mode: "online",
                 onlineSong: body.data,
               });
@@ -59,18 +74,7 @@ export function useBoardUrlBootstrap({
           })
           .catch(() => undefined);
       }
-    }
-
-    if (parsed.stepIndex !== null) {
-      onStepIndex(parsed.stepIndex);
-    }
-
-    if (parsed.cinematic) {
-      onCinematic(true);
-    }
-
-    onPasswordHash(parsed.passwordHash);
-    // Run once on mount to hydrate from share URL.
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }

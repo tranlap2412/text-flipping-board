@@ -56,8 +56,11 @@ export function CinematicView({
   const songTitle = getMusicTitle(musicSelection);
 
   useEffect(() => {
-    if (playMusic) onPlayRequest();
-  }, [playMusic, playbackUrl, onPlayRequest]);
+    if (!playMusic) return;
+    onPlayRequest();
+    // Kick off playback once when cinematic opens or track URL changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playMusic, playbackUrl]);
 
   useEffect(() => {
     if (!musicBlocked || !playMusic) return;

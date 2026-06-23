@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ChevronLeft, ChevronRight, Layers, Plus, Trash2, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import type { BoardStep, StepAdvanceMode } from "@/lib/steps";
 import { stepEditorCopy } from "@/lib/content";
+import { graphemeLength, sliceGraphemes, toBoardInputText } from "@/lib/flap-chars";
+
+const MAX_STEP_GRAPHEMES = 132;
 
 interface StepEditorProps {
   steps: BoardStep[];
@@ -43,8 +47,21 @@ export function StepEditor({
   onAdvanceModeChange,
   onAutoIntervalChange,
 }: StepEditorProps) {
+  const [isComposing, setIsComposing] = useState(false);
   const activeStep = steps[activeIndex];
-  const charCount = activeStep?.text.length ?? 0;
+  const charCount = activeStep ? graphemeLength(activeStep.text) : 0;
+
+  const applyInputText = (text: string, forceUppercase: boolean) => {
+    let next = forceUppercase ? toBoardInputText(text) : text;
+    if (graphemeLength(next) > MAX_STEP_GRAPHEMES) {
+      next = sliceGraphemes(next, MAX_STEP_GRAPHEMES);
+    }
+    onStepTextChange(activeIndex, next);
+  };
+
+  const handleTextChange = (text: string) => {
+    applyInputText(text, !isComposing);
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -108,18 +125,25 @@ export function StepEditor({
               {stepEditorCopy.messageText(activeIndex)}
             </Label>
             <Badge variant="outline" className="shrink-0 tabular-nums">
-              {charCount} / 132
+              {charCount} / {MAX_STEP_GRAPHEMES}
             </Badge>
           </div>
 
           <Textarea
             id="step-content"
             value={activeStep.text}
-            onChange={(e) => onStepTextChange(activeIndex, e.target.value)}
-            onBlur={() => onStepBlur(activeIndex)}
+            onChange={(e) => handleTextChange(e.target.value)}
+            onCompositionStart={() => setIsComposing(true)}
+            onCompositionEnd={(e) => {
+              setIsComposing(false);
+              applyInputText(e.currentTarget.value, true);
+            }}
+            onBlur={() => {
+              applyInputText(activeStep.text, true);
+              onStepBlur(activeIndex);
+            }}
             placeholder={stepEditorCopy.placeholder}
             rows={6}
-            maxLength={132}
             className="min-h-[148px] resize-none rounded-none border border-border/50 bg-transparent px-3 py-3 font-mono text-sm uppercase tracking-wider shadow-none focus-visible:border-primary/35 focus-visible:ring-0"
           />
 
