@@ -29,11 +29,11 @@ Open [http://localhost:3000](http://localhost:3000).
 3. Build: `yarn build` · Install: `yarn install`.
 4. Add environment variable (recommended):
 
-| Variable | Value |
-| --- | --- |
+| Variable               | Value                                    |
+| ---------------------- | ---------------------------------------- |
 | `NEXT_PUBLIC_SITE_URL` | `https://text-flipping-board.vercel.app` |
 
-5. Deploy. Zing MP3 routes (`/api/zing/*`) run as serverless functions automatically.
+5. Deploy. Zing MP3 routes (`/api/zing/*`) run as serverless functions in **Singapore (`sin1`)** — see `vercel.json`. After deploy, test Zing stream: `/api/zing/debug?id=ZZEEOWEW` (expect `streaming.err: 0` if the region fix works).
 
 No database required — share links encode board state in the URL.
 
