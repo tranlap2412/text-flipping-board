@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Globe, Music, Search } from "lucide-react";
 import { BackgroundMusicPlayer } from "@/components/background-music-player";
-import { useZingPlaybackUrl } from "@/hooks/use-zing-playback-url";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +19,7 @@ import { ZING_API_ENABLED } from "@/lib/deploy";
 import { MUSIC_PRESETS } from "@/lib/music-presets";
 import { musicCopy } from "@/lib/content";
 import {
+  getMusicPlaybackUrl,
   type MusicSelection,
   type OnlineSong,
 } from "@/lib/music-types";
@@ -32,7 +32,6 @@ interface MusicControlsProps {
   onPlayingChange: (playing: boolean) => void;
   onPlayRequest: () => void;
   onPlayBlocked: () => void;
-  musicBlocked?: boolean;
 }
 
 export function MusicControls({
@@ -43,14 +42,11 @@ export function MusicControls({
   onPlayingChange,
   onPlayRequest,
   onPlayBlocked,
-  musicBlocked = false,
 }: MusicControlsProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<OnlineSong[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const { playbackUrl, isReady } = useZingPlaybackUrl(selection, () => {
-    if (playing) onPlayRequest();
-  });
+  const playbackUrl = getMusicPlaybackUrl(selection);
 
   const handlePresetChange = (presetId: string) => {
     onSelectionChange({
@@ -228,13 +224,9 @@ export function MusicControls({
         ) : null}
       </Tabs>
 
-      {musicBlocked && playing && (
-        <p className="text-xs text-muted-foreground">{musicCopy.tapToStart}</p>
-      )}
-
       <BackgroundMusicPlayer
         url={playbackUrl}
-        playing={playing && isReady}
+        playing={playing}
         playTrigger={playTrigger}
         onPlayBlocked={onPlayBlocked}
         hidden

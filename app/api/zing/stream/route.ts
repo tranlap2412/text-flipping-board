@@ -1,4 +1,5 @@
-import { resolveZingStreamUrl } from "@/lib/zing-stream-url";
+import { Readable } from "node:stream";
+import { getZingClient } from "@/lib/zing-client";
 
 export const runtime = "nodejs";
 
@@ -14,8 +15,15 @@ export async function GET(request: Request) {
   }
 
   try {
-    const streamUrl = await resolveZingStreamUrl(id);
-    return Response.redirect(streamUrl, 302);
+    const stream = await getZingClient().music(id);
+    const webStream = Readable.toWeb(stream) as ReadableStream;
+
+    return new Response(webStream, {
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Cache-Control": "private, max-age=3600",
+      },
+    });
   } catch (error) {
     console.error("Zing stream error:", error);
     return Response.json(

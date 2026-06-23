@@ -32,7 +32,6 @@ interface DashboardViewProps {
   musicSelection: MusicSelection;
   playMusic: boolean;
   playTrigger: number;
-  musicBlocked?: boolean;
   showToast: boolean;
   toastMessage: string;
   onActiveStepIndexChange: (index: number) => void;
@@ -74,7 +73,6 @@ export function DashboardView({
   musicSelection,
   playMusic,
   playTrigger,
-  musicBlocked,
   showToast,
   toastMessage,
   onActiveStepIndexChange,
@@ -210,7 +208,6 @@ export function DashboardView({
                 onPlayingChange={onPlayMusicChange}
                 onPlayRequest={onPlayRequest}
                 onPlayBlocked={onPlayBlocked}
-                musicBlocked={musicBlocked}
               />
 
               <SharePasswordSettings

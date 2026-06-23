@@ -6,12 +6,11 @@ import { TextFlippingBoard } from "@/components/ui/text-flipping-board";
 import { BackgroundMusicPlayer } from "@/components/background-music-player";
 import { DeckToast } from "@/components/demo/deck-toast";
 import { StepNavigator } from "@/components/demo/step-editor";
-import { useZingPlaybackUrl } from "@/hooks/use-zing-playback-url";
 import {
+  getMusicPlaybackUrl,
   getMusicTitle,
   type MusicSelection,
 } from "@/lib/music-types";
-import { musicCopy } from "@/lib/content";
 import type { StepAdvanceMode } from "@/lib/steps";
 
 interface CinematicViewProps {
@@ -24,7 +23,6 @@ interface CinematicViewProps {
   musicSelection: MusicSelection;
   playMusic: boolean;
   playTrigger: number;
-  musicBlocked: boolean;
   showToast: boolean;
   toastMessage: string;
   onStepPrev: () => void;
@@ -44,7 +42,6 @@ export function CinematicView({
   musicSelection,
   playMusic,
   playTrigger,
-  musicBlocked,
   showToast,
   toastMessage,
   onStepPrev,
@@ -53,9 +50,7 @@ export function CinematicView({
   onPlayBlocked,
   onPlayStarted,
 }: CinematicViewProps) {
-  const { playbackUrl, isReady } = useZingPlaybackUrl(musicSelection, () => {
-    if (playMusic) onPlayRequest();
-  });
+  const playbackUrl = getMusicPlaybackUrl(musicSelection);
   const songTitle = getMusicTitle(musicSelection);
 
   useEffect(() => {
@@ -94,12 +89,6 @@ export function CinematicView({
             </p>
           )}
 
-          {musicBlocked && playMusic && (
-            <p className="font-mono text-[9px] tracking-widest text-muted-foreground uppercase">
-              {musicCopy.tapToStart}
-            </p>
-          )}
-
           {advanceMode === "manual" && totalSteps > 1 && (
             <StepNavigator
               stepIndex={stepIndex}
@@ -120,7 +109,7 @@ export function CinematicView({
 
       <BackgroundMusicPlayer
         url={playbackUrl}
-        playing={playMusic && isReady}
+        playing={playMusic}
         playTrigger={playTrigger}
         onPlayBlocked={onPlayBlocked}
         onPlayStarted={onPlayStarted}
