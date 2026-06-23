@@ -100,7 +100,10 @@ export default function TextFlippingBoardDemo() {
       setActiveStepIndex(0);
       setPreviewStepIndex(0);
     },
-    onMusicSelection: setMusicSelection,
+    onMusicSelection: (selection) => {
+      setMusicSelection(selection);
+      requestMusicPlay();
+    },
     onStepIndex: setBoardStepIndex,
     onCinematic: (enabled) => {
       setIsCinematic(enabled);
@@ -120,6 +123,26 @@ export default function TextFlippingBoardDemo() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSoundOn(isSoundEnabled());
   }, []);
+
+  useEffect(() => {
+    if (!playMusic) return;
+    requestMusicPlay();
+  }, [playMusic, musicSelection, requestMusicPlay]);
+
+  useEffect(() => {
+    if (!musicBlocked || !playMusic) return;
+
+    const unlock = () => {
+      requestMusicPlay();
+    };
+
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, [musicBlocked, playMusic, requestMusicPlay]);
 
   const handleStepTextChange = (index: number, text: string) => {
     setSteps((prev) =>

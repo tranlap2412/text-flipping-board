@@ -6,7 +6,6 @@ interface BackgroundMusicPlayerProps {
   url: string;
   playing: boolean;
   playTrigger?: number;
-  autoPlay?: boolean;
   onPlayBlocked?: () => void;
   onPlayStarted?: () => void;
   hidden?: boolean;
@@ -23,10 +22,31 @@ export function BackgroundMusicPlayer({
   const audioRef = useRef<HTMLAudioElement>(null);
   const onPlayBlockedRef = useRef(onPlayBlocked);
   const onPlayStartedRef = useRef(onPlayStarted);
-  const lastPlayTriggerRef = useRef(playTrigger);
+  const lastPlayTriggerRef = useRef(-1);
+  const lastUrlRef = useRef("");
+  const needsUnmuteRef = useRef(false);
 
   onPlayBlockedRef.current = onPlayBlocked;
   onPlayStartedRef.current = onPlayStarted;
+
+  useEffect(() => {
+    if (!needsUnmuteRef.current || !playing) return;
+
+    const unmute = () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.muted = false;
+      needsUnmuteRef.current = false;
+      void audio.play().catch(() => undefined);
+    };
+
+    window.addEventListener("pointerdown", unmute, { once: true });
+    window.addEventListener("keydown", unmute, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unmute);
+      window.removeEventListener("keydown", unmute);
+    };
+  }, [playing, playTrigger, url]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -34,15 +54,20 @@ export function BackgroundMusicPlayer({
 
     if (!playing) {
       audio.pause();
+      needsUnmuteRef.current = false;
       return;
     }
 
-    const shouldRestart = playTrigger !== lastPlayTriggerRef.current;
+    const urlChanged = lastUrlRef.current !== url;
+    lastUrlRef.current = url;
+
+    const shouldRestart =
+      playTrigger !== lastPlayTriggerRef.current || urlChanged;
     lastPlayTriggerRef.current = playTrigger;
 
     if (shouldRestart) {
       audio.currentTime = 0;
-    } else if (!audio.paused) {
+    } else if (!audio.paused && !urlChanged) {
       return;
     }
 
@@ -53,17 +78,18 @@ export function BackgroundMusicPlayer({
 
       try {
         audio.muted = false;
+        needsUnmuteRef.current = false;
         await audio.play();
         onPlayStartedRef.current?.();
         return;
       } catch {
-        // Muted autoplay is allowed in most browsers; unmute once playback starts.
+        // Fall back to muted autoplay (allowed without a gesture in most browsers).
       }
 
       try {
         audio.muted = true;
         await audio.play();
-        audio.muted = false;
+        needsUnmuteRef.current = true;
         onPlayStartedRef.current?.();
       } catch {
         onPlayBlockedRef.current?.();

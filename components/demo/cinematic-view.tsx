@@ -56,28 +56,6 @@ export function CinematicView({
   const songTitle = getMusicTitle(musicSelection);
 
   useEffect(() => {
-    if (!playMusic) return;
-    onPlayRequest();
-    // Kick off playback once when cinematic opens or track URL changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playMusic, playbackUrl]);
-
-  useEffect(() => {
-    if (!musicBlocked || !playMusic) return;
-
-    const unlock = () => {
-      onPlayRequest();
-    };
-
-    window.addEventListener("pointerdown", unlock, { once: true });
-    window.addEventListener("keydown", unlock, { once: true });
-    return () => {
-      window.removeEventListener("pointerdown", unlock);
-      window.removeEventListener("keydown", unlock);
-    };
-  }, [musicBlocked, playMusic, onPlayRequest]);
-
-  useEffect(() => {
     if (advanceMode !== "auto" || totalSteps <= 1) return;
     const delay = (duration + autoInterval) * 1000;
     const timer = setTimeout(onStepNext, delay);
@@ -135,7 +113,6 @@ export function CinematicView({
         url={playbackUrl}
         playing={playMusic}
         playTrigger={playTrigger}
-        autoPlay
         onPlayBlocked={onPlayBlocked}
         onPlayStarted={onPlayStarted}
         hidden
