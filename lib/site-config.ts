@@ -1,14 +1,8 @@
 import { siteCopy } from "@/lib/content";
 
-const productionUrl = "https://text-flipping-board.vercel.app";
+const productionUrl = "https://cloudcenter.vn";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : productionUrl);
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? productionUrl;
 
 export const siteConfig = {
   name: siteCopy.name,

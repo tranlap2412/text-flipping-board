@@ -1,4 +1,4 @@
-import { cpSync, createWriteStream, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
@@ -21,24 +21,23 @@ const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const version = pkg.version ?? "0.0.0";
 const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
 const archiveBase = `${pkg.name}-v${version}-${date}`;
-const archivePath = join(distDir, `${archiveBase}.tar.gz`);
+const archivePath = join(distDir, `${archiveBase}.zip`);
 
 mkdirSync(distDir, { recursive: true });
 
-const tar = spawnSync(
-  "tar",
-  ["-czf", archivePath, "-C", join(root, ".next"), "standalone"],
-  { stdio: "inherit" },
-);
+const zip = spawnSync("zip", ["-rq", archivePath, "standalone"], {
+  cwd: join(root, ".next"),
+  stdio: "inherit",
+});
 
-if (tar.status !== 0) {
-  console.error("Failed to create archive — is `tar` available?");
-  process.exit(tar.status ?? 1);
+if (zip.status !== 0) {
+  console.error("Failed to create archive — is `zip` available?");
+  process.exit(zip.status ?? 1);
 }
 
 console.log("");
 console.log("Standalone bundle: .next/standalone/");
-console.log(`Archive:           dist/${archiveBase}.tar.gz`);
+console.log(`Archive:           dist/${archiveBase}.zip`);
 console.log("Deploy:");
-console.log(`  tar -xzf ${archiveBase}.tar.gz`);
+console.log(`  unzip ${archiveBase}.zip`);
 console.log("  cd standalone && PORT=3000 node server.js");

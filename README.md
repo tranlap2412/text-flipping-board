@@ -2,7 +2,7 @@
 
 A split-flap message studio — compose multi-step messages, tune flip speed and sound, add music, then play fullscreen or share a cinematic link. Optional password protection for shared links.
 
-**Live:** [text-flipping-board.vercel.app](https://text-flipping-board.vercel.app)  
+**Live:** [cloudcenter.vn](https://cloudcenter.vn)  
 **Repo:** [github.com/tranlap2412/text-flipping-board](https://github.com/tranlap2412/text-flipping-board)
 
 ## Features
@@ -34,12 +34,12 @@ yarn build
 This produces:
 
 - `.next/standalone/` — run directly on the server
-- `dist/text-flipping-board-v{version}-{YYYYMMDD}.tar.gz` — upload this to VPS
+- `dist/text-flipping-board-v{version}-{YYYYMMDD}.zip` — upload this to VPS
 
 On the server:
 
 ```bash
-tar -xzf text-flipping-board-v0.1.0-20250623.tar.gz
+unzip text-flipping-board-v0.1.0-20250623.zip
 cd standalone
 PORT=3000 node server.js
 ```
@@ -48,7 +48,7 @@ Optional env:
 
 | Variable               | Value                         |
 | ---------------------- | ----------------------------- |
-| `NEXT_PUBLIC_SITE_URL` | `https://your-domain.vn`      |
+| `NEXT_PUBLIC_SITE_URL` | `https://cloudcenter.vn`      |
 | `PORT`                 | `3000` (or your reverse proxy)|
 
 Put nginx/Caddy in front for HTTPS.
