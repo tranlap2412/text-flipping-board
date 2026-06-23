@@ -1,31 +1,30 @@
+import { siteCopy } from "@/lib/content";
+
+const productionUrl = "https://text-flipping-board.vercel.app";
+
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000");
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : productionUrl);
 
 export const siteConfig = {
-  name: "AetherGate Flip-Board",
+  name: siteCopy.name,
   shortName: "Flip-Board",
-  title: "AetherGate Flip-Board — Split-flap message studio",
-  description:
-    "Compose multi-step split-flap messages with sound, music, and fullscreen cinematic playback. Share a link for the same slow reveal — flap by flap.",
-  tagline: "A moment that lands, flap by flap.",
+  title: siteCopy.title,
+  description: siteCopy.description,
+  tagline: siteCopy.tagline,
+  productionUrl,
   author: {
     name: "William Bond",
     url: "https://github.com/tranlap2412",
   },
+  repository: "https://github.com/tranlap2412/text-flipping-board",
   url: siteUrl,
   locale: "en_US",
-  keywords: [
-    "split-flap display",
-    "flip board",
-    "departure board",
-    "message studio",
-    "cinematic text",
-    "shareable messages",
-    "Vietnamese text",
-  ],
+  keywords: [...siteCopy.keywords],
 } as const;
 
 export function getSiteUrl(): string {

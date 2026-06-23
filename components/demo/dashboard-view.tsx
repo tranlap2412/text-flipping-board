@@ -4,6 +4,7 @@ import { Share2, Maximize2, Sparkles } from "lucide-react";
 import { BoardPreviewPanel } from "@/components/demo/board-preview-panel";
 import { DeckToast } from "@/components/demo/deck-toast";
 import { MusicControls } from "@/components/demo/music-controls";
+import { SharePasswordSettings } from "@/components/demo/share-password-settings";
 import { SiteFooter } from "@/components/demo/site-footer";
 import { StepEditor } from "@/components/demo/step-editor";
 import { WhatThisIsCard } from "@/components/demo/what-this-is-card";
@@ -14,6 +15,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import type { MusicSelection } from "@/lib/music-types";
 import type { BoardStep, StepAdvanceMode } from "@/lib/steps";
+import { dashboardCopy, siteCopy } from "@/lib/content";
 
 interface DashboardViewProps {
   steps: BoardStep[];
@@ -50,6 +52,10 @@ interface DashboardViewProps {
   onPlayMusicChange: (playing: boolean) => void;
   onPlayRequest: () => void;
   onPlayBlocked: () => void;
+  sharePasswordEnabled: boolean;
+  sharePassword: string;
+  onSharePasswordEnabledChange: (enabled: boolean) => void;
+  onSharePasswordChange: (password: string) => void;
 }
 
 export function DashboardView({
@@ -87,6 +93,10 @@ export function DashboardView({
   onPlayMusicChange,
   onPlayRequest,
   onPlayBlocked,
+  sharePasswordEnabled,
+  sharePassword,
+  onSharePasswordEnabledChange,
+  onSharePasswordChange,
 }: DashboardViewProps) {
   return (
     <div className="flex w-full flex-col gap-5 lg:gap-6">
@@ -99,21 +109,21 @@ export function DashboardView({
           </div>
           <div>
             <p className="mb-0.5 text-[10px] font-semibold tracking-[0.2em] text-primary/80 uppercase">
-              Split-flap board studio
+              {siteCopy.subtitle}
             </p>
             <h1 className="font-heading text-xl font-bold tracking-tight md:text-2xl lg:text-3xl">
-              AetherGate Flip-Board
+              {siteCopy.name}
             </h1>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0">
           <Button type="button" size="sm" onClick={onCinematic}>
             <Maximize2 data-icon="inline-start" />
-            Fullscreen
+            {dashboardCopy.fullscreen}
           </Button>
           <Button type="button" variant="outline" size="sm" onClick={onShare}>
             <Share2 data-icon="inline-start" />
-            Share link
+            {dashboardCopy.shareLink}
           </Button>
         </div>
       </header>
@@ -138,7 +148,7 @@ export function DashboardView({
         <div className="order-2 flex flex-col gap-4 lg:order-1 lg:col-span-4 lg:col-start-1 lg:row-start-1">
           <Card className="studio-panel">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Message steps</CardTitle>
+              <CardTitle className="text-sm">{dashboardCopy.messageSteps}</CardTitle>
             </CardHeader>
             <CardContent>
               <StepEditor
@@ -162,12 +172,12 @@ export function DashboardView({
 
           <Card className="studio-panel">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Board settings</CardTitle>
+              <CardTitle className="text-sm">{dashboardCopy.boardSettings}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <Label>Flip speed</Label>
+                  <Label>{dashboardCopy.flipSpeed}</Label>
                   <span className="text-xs font-semibold tabular-nums text-primary">
                     {duration.toFixed(1)}s
                   </span>
@@ -182,7 +192,7 @@ export function DashboardView({
               </div>
 
               <div className="flex items-center justify-between border border-border/50 bg-muted/30 px-3 py-3">
-                <Label htmlFor="sound-toggle">Click sound</Label>
+                <Label htmlFor="sound-toggle">{dashboardCopy.clickSound}</Label>
                 <Switch
                   id="sound-toggle"
                   checked={soundOn}
@@ -198,6 +208,13 @@ export function DashboardView({
                 onPlayingChange={onPlayMusicChange}
                 onPlayRequest={onPlayRequest}
                 onPlayBlocked={onPlayBlocked}
+              />
+
+              <SharePasswordSettings
+                enabled={sharePasswordEnabled}
+                password={sharePassword}
+                onEnabledChange={onSharePasswordEnabledChange}
+                onPasswordChange={onSharePasswordChange}
               />
             </CardContent>
           </Card>

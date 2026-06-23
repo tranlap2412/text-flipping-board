@@ -3,6 +3,7 @@ import {
   findPresetById,
   type MusicPreset,
 } from "@/lib/music-presets";
+import { ZING_API_ENABLED } from "@/lib/deploy";
 
 export type MusicSourceMode = "preset" | "online";
 
@@ -19,15 +20,32 @@ export interface MusicSelection {
   onlineSong: OnlineSong | null;
 }
 
+/** Default: Shakira — Waka Waka (Esto Es Africa) (K-Mix) on Zing MP3 */
+export const DEFAULT_ONLINE_SONG: OnlineSong = {
+  id: "ZWZ9EOIO",
+  name: "Waka Waka (Esto Es Africa) (K-Mix)",
+  artist: "Shakira",
+  thumbnail:
+    "https://photo-resize-zmp3.zmdcdn.me/w94_r1x1_jpeg/cover/3/2/a/3/32a35f4d26ee56366397c09953f6c269.jpg",
+};
+
 export const DEFAULT_MUSIC_SELECTION: MusicSelection = {
-  mode: "preset",
+  mode: "online",
   presetId: DEFAULT_MUSIC_ID,
-  onlineSong: null,
+  onlineSong: DEFAULT_ONLINE_SONG,
 };
 
 export function getMusicPlaybackUrl(selection: MusicSelection): string {
-  if (selection.mode === "online" && selection.onlineSong) {
+  if (
+    ZING_API_ENABLED &&
+    selection.mode === "online" &&
+    selection.onlineSong
+  ) {
     return `/api/zing/stream?id=${encodeURIComponent(selection.onlineSong.id)}`;
+  }
+  if (selection.mode === "online" && selection.onlineSong && !ZING_API_ENABLED) {
+    const preset = findPresetById(selection.presetId);
+    return preset?.url ?? findPresetById(DEFAULT_MUSIC_ID)!.url;
   }
   const preset = findPresetById(selection.presetId);
   return preset?.url ?? findPresetById(DEFAULT_MUSIC_ID)!.url;

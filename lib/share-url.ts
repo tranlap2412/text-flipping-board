@@ -22,6 +22,7 @@ export interface ParsedBoardUrl {
   stepIndex: number | null;
   cinematic: boolean;
   isSharedView: boolean;
+  passwordHash: string | null;
 }
 
 export function parseBoardSearchParams(
@@ -31,6 +32,7 @@ export function parseBoardSearchParams(
   const viewParam = params.get("view");
   const musicParam = params.get("music");
   const stepParam = params.get("step");
+  const lockParam = params.get("lock")?.trim() || null;
 
   let sharedPayload: SharedBoardPayload | null = null;
   if (dataParam) {
@@ -61,6 +63,7 @@ export function parseBoardSearchParams(
     stepIndex,
     cinematic,
     isSharedView,
+    passwordHash: lockParam,
   };
 }
 
@@ -71,6 +74,7 @@ export function buildShareUrl(
   advanceMode: StepAdvanceMode,
   autoInterval: number,
   musicSelection: MusicSelection,
+  passwordHash?: string | null,
 ): string {
   const encoded = encodeStepsPayload(steps, advanceMode, autoInterval);
   const music = serializeMusicParam(musicSelection);
@@ -79,6 +83,10 @@ export function buildShareUrl(
     view: "cinematic",
     music,
   });
+
+  if (passwordHash) {
+    params.set("lock", passwordHash);
+  }
 
   return `${origin}${pathname}?${params.toString()}`;
 }

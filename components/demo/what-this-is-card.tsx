@@ -5,29 +5,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { whatThisIs } from "@/lib/content";
 
 export function WhatThisIsCard({ className }: { className?: string }) {
   return (
-    <Card size="sm" className={className}>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-[11px] font-semibold tracking-widest uppercase">
-          What this is
+    <Card className={className}>
+      <CardHeader className="border-b border-primary/10 pb-3">
+        <CardTitle className="text-sm font-semibold tracking-[0.22em] uppercase text-primary/90 md:text-base">
+          {whatThisIs.title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2 pt-2">
-        <CardDescription className="text-xs leading-snug">
-          AetherGate Flip-Board recreates the quiet drama of classic departure
-          boards — each letter with weight, each message arriving one flip at a
-          time.
-        </CardDescription>
-        <CardDescription className="text-xs leading-snug">
-          Write for someone waiting, a celebration, or a line the room should
-          feel. Chain steps, tune speed and sound, add music, then go
-          fullscreen or share a link for the same slow reveal.
-        </CardDescription>
-        <CardDescription className="text-[11px] leading-snug text-primary/75">
-          Not a slide. Not a ping. A moment that lands, flap by flap.
-        </CardDescription>
+      <CardContent className="space-y-4 pt-5 md:space-y-3 md:pt-4">
+        {whatThisIs.paragraphs.map((paragraph) => (
+          <CardDescription
+            key={paragraph.slice(0, 24)}
+            className="text-sm leading-relaxed text-foreground/85 md:text-base md:leading-relaxed"
+          >
+            {paragraph}
+          </CardDescription>
+        ))}
+        <p className="border-t border-primary/15 pt-4 text-sm font-medium leading-snug tracking-wide text-primary md:pt-4 md:text-base md:leading-relaxed">
+          {whatThisIs.closing}
+        </p>
       </CardContent>
     </Card>
   );

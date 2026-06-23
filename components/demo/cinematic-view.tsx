@@ -6,7 +6,6 @@ import { TextFlippingBoard } from "@/components/ui/text-flipping-board";
 import { BackgroundMusicPlayer } from "@/components/background-music-player";
 import { DeckToast } from "@/components/demo/deck-toast";
 import { StepNavigator } from "@/components/demo/step-editor";
-import { Button } from "@/components/ui/button";
 import {
   getMusicPlaybackUrl,
   getMusicTitle,
@@ -31,6 +30,7 @@ interface CinematicViewProps {
   onStepNext: () => void;
   onPlayRequest: () => void;
   onPlayBlocked: () => void;
+  onPlayStarted?: () => void;
 }
 
 export function CinematicView({
@@ -50,9 +50,29 @@ export function CinematicView({
   onStepNext,
   onPlayRequest,
   onPlayBlocked,
+  onPlayStarted,
 }: CinematicViewProps) {
   const playbackUrl = getMusicPlaybackUrl(musicSelection);
   const songTitle = getMusicTitle(musicSelection);
+
+  useEffect(() => {
+    if (playMusic) onPlayRequest();
+  }, [playMusic, playbackUrl, onPlayRequest]);
+
+  useEffect(() => {
+    if (!musicBlocked || !playMusic) return;
+
+    const unlock = () => {
+      onPlayRequest();
+    };
+
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, [musicBlocked, playMusic, onPlayRequest]);
 
   useEffect(() => {
     if (advanceMode !== "auto" || totalSteps <= 1) return;
@@ -77,7 +97,7 @@ export function CinematicView({
         <TextFlippingBoard
           text={boardText}
           duration={duration}
-          className="bg-transparent p-3 shadow-[0_0_50px_color-mix(in_oklch,var(--primary)_10%,transparent)] sm:p-4 md:p-5"
+          className="bg-transparent p-3 sm:p-4 md:p-5"
         />
       </div>
 
@@ -105,18 +125,6 @@ export function CinematicView({
               Step {stepIndex + 1} / {totalSteps} · Auto
             </span>
           )}
-
-          {musicBlocked && playMusic && (
-            <Button
-              type="button"
-              variant="outline"
-              size="xs"
-              onClick={onPlayRequest}
-              className="border-amber-500/30 text-amber-300/80 hover:text-amber-200"
-            >
-              Tap to play music
-            </Button>
-          )}
         </div>
       </div>
 
@@ -124,7 +132,9 @@ export function CinematicView({
         url={playbackUrl}
         playing={playMusic}
         playTrigger={playTrigger}
+        autoPlay
         onPlayBlocked={onPlayBlocked}
+        onPlayStarted={onPlayStarted}
         hidden
       />
     </div>

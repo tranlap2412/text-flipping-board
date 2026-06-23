@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import type { BoardStep, StepAdvanceMode } from "@/lib/steps";
+import { stepEditorCopy } from "@/lib/content";
 
 interface StepEditorProps {
   steps: BoardStep[];
@@ -47,33 +48,34 @@ export function StepEditor({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Layers className="h-4 w-4 text-primary" />
+      <section className="rounded-none border border-border/60 bg-muted/10 p-3">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Layers className="h-4 w-4 text-primary" />
           <h3 className="text-xs font-semibold tracking-wider uppercase">
-            Steps ({steps.length})
+            {stepEditorCopy.steps(steps.length)}
           </h3>
-        </div>
+          </div>
         <Button type="button" variant="outline" size="xs" onClick={onAddStep}>
           <Plus data-icon="inline-start" />
-          Add step
+          {stepEditorCopy.addStep}
         </Button>
-      </div>
+        </div>
 
-      <div className="flex flex-wrap gap-1.5">
-        {steps.map((step, index) => (
-          <Button
-            key={step.id}
-            type="button"
-            variant={index === activeIndex ? "default" : "outline"}
-            size="xs"
-            onClick={() => onActiveIndexChange(index)}
-            className="gap-1"
-          >
-            Step {index + 1}
-            {isStepDirty(index) && (
-              <span className="h-1.5 w-1.5 bg-amber-400" />
-            )}
+        <div className="flex flex-wrap gap-1.5">
+          {steps.map((step, index) => (
+            <Button
+              key={step.id}
+              type="button"
+              variant={index === activeIndex ? "default" : "outline"}
+              size="xs"
+              onClick={() => onActiveIndexChange(index)}
+              className="gap-1"
+            >
+              Step {index + 1}
+              {isStepDirty(index) && (
+                <span className="h-1.5 w-1.5 bg-amber-400" />
+              )}
               {steps.length > 1 && (
                 <span
                   role="button"
@@ -93,15 +95,18 @@ export function StepEditor({
                 >
                   <Trash2 className="h-3 w-3" />
                 </span>
-            )}
-          </Button>
-        ))}
-      </div>
+              )}
+            </Button>
+          ))}
+        </div>
+      </section>
 
       {activeStep && (
-        <div className="flex flex-col gap-3 border border-border bg-muted/20 p-4">
-          <div className="flex items-center justify-between gap-2">
-            <Label htmlFor="step-content">Step {activeIndex + 1}</Label>
+        <section className="rounded-none border border-primary/15 bg-muted/10 p-4">
+          <div className="mb-3 flex items-center justify-between gap-2 border-b border-border/40 pb-3">
+            <Label htmlFor="step-content" className="text-sm font-semibold">
+              {stepEditorCopy.messageText(activeIndex)}
+            </Label>
             <Badge variant="outline" className="shrink-0 tabular-nums">
               {charCount} / 132
             </Badge>
@@ -112,13 +117,13 @@ export function StepEditor({
             value={activeStep.text}
             onChange={(e) => onStepTextChange(activeIndex, e.target.value)}
             onBlur={() => onStepBlur(activeIndex)}
-            placeholder="Enter text to display on the split-flap board..."
+            placeholder={stepEditorCopy.placeholder}
             rows={6}
             maxLength={132}
-            className="min-h-[140px] resize-none border-0 bg-transparent px-0 py-0 font-mono text-xs uppercase tracking-wider shadow-none focus-visible:ring-0"
+            className="min-h-[148px] resize-none rounded-none border border-border/50 bg-transparent px-3 py-3 font-mono text-sm uppercase tracking-wider shadow-none focus-visible:border-primary/35 focus-visible:ring-0"
           />
 
-          <div className="flex justify-end">
+          <div className="mt-3 flex justify-end border-t border-border/40 pt-3">
             <Button
               type="button"
               size="sm"
@@ -126,15 +131,17 @@ export function StepEditor({
               onClick={onSaveToPreview}
             >
               <Eye data-icon="inline-start" />
-              Update preview
+              {stepEditorCopy.updatePreview}
             </Button>
           </div>
-        </div>
+        </section>
       )}
 
       {steps.length > 1 && (
-        <div className="flex flex-col gap-3 border border-border/50 bg-muted/20 p-3">
-          <Label>Step advance in view mode</Label>
+        <section className="rounded-none border border-border/60 bg-muted/10 p-4">
+          <Label className="mb-3 block text-sm font-semibold">
+            {stepEditorCopy.advanceLabel}
+          </Label>
           <Tabs
             value={advanceMode}
             onValueChange={(value) =>
@@ -151,9 +158,9 @@ export function StepEditor({
             </TabsList>
           </Tabs>
           {advanceMode === "auto" && (
-            <div className="flex flex-col gap-2">
+            <div className="mt-4 flex flex-col gap-2 border-t border-border/40 pt-4">
               <div className="flex items-center justify-between">
-                <Label>Hold time per step</Label>
+                <Label>{stepEditorCopy.holdTime}</Label>
                 <span className="text-xs font-semibold tabular-nums">
                   {autoInterval}s
                 </span>
@@ -167,7 +174,7 @@ export function StepEditor({
               />
             </div>
           )}
-        </div>
+        </section>
       )}
     </div>
   );

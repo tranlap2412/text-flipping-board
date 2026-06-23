@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { TextFlippingBoard } from "@/components/ui/text-flipping-board";
 import type { StepAdvanceMode } from "@/lib/steps";
+import { previewCopy } from "@/lib/content";
 
 interface BoardPreviewPanelProps {
   boardText: string;
@@ -60,7 +61,7 @@ export function BoardPreviewPanel({
                 <span className="relative inline-flex h-2 w-2 bg-primary" />
               </span>
               <CardTitle className="text-sm uppercase tracking-wider">
-                Live preview
+                {previewCopy.title}
               </CardTitle>
             </div>
           </div>
@@ -75,14 +76,16 @@ export function BoardPreviewPanel({
         </div>
         <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-3 sm:gap-2">
           <Badge variant="outline" className="border-primary/25 bg-primary/5 text-primary">
-            Step {previewStepIndex + 1} of {totalSteps}
+            {previewCopy.stepOf(previewStepIndex + 1, totalSteps)}
           </Badge>
           <Badge variant="outline" className="border-border/60">
-            {advanceMode === "auto" ? "Auto advance" : "Manual advance"}
+            {advanceMode === "auto"
+              ? previewCopy.autoAdvance
+              : previewCopy.manualAdvance}
           </Badge>
           {isDirty && (
             <Badge variant="outline" className="border-amber-500/30 text-amber-400/90">
-              Unsaved edits
+              {previewCopy.unsavedEdits}
             </Badge>
           )}
         </div>

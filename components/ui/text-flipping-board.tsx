@@ -15,7 +15,7 @@ import {
   useAnimationControls,
 } from "motion/react";
 import { cn } from "@/lib/utils";
-import { playFlipSound, playSuccessSound } from "@/lib/audio";
+import { playFlipSound } from "@/lib/audio";
 import {
   normalizeFlapChar,
   normalizeBoardText,
@@ -27,10 +27,10 @@ import {
 const BOARD_ROWS = 6;
 const BOARD_COLS = 22;
 
-const BASE_COL_DELAY = 30;
-const BASE_ROW_DELAY = 20;
-const BASE_STEP_MS = 55;
-const BASE_FLIP_S = 0.35;
+const BASE_COL_DELAY = 24;
+const BASE_ROW_DELAY = 16;
+const BASE_STEP_MS = 42;
+const BASE_FLIP_S = 0.28;
 const BASE_TOTAL_S =
   ((BOARD_COLS - 1) * BASE_COL_DELAY +
     (BOARD_ROWS - 1) * BASE_ROW_DELAY +
@@ -130,8 +130,8 @@ const FlapCell = React.memo(function FlapCell({
 
     const scrambleCount =
       normalized === " "
-        ? 8 + Math.floor(Math.random() * 8)
-        : 20 + Math.floor(Math.random() * 12);
+        ? 2 + Math.floor(Math.random() * 2)
+        : 4 + Math.floor(Math.random() * 4);
 
     let flipCounter = flipIdRef.current;
 
@@ -141,11 +141,7 @@ const FlapCell = React.memo(function FlapCell({
         ? normalized
         : randomFlapChar();
 
-      const newAccent = isLast
-        ? null
-        : Math.random() < 0.2
-          ? ACCENT_COLORS[Math.floor(Math.random() * ACCENT_COLORS.length)]
-          : null;
+      const newAccent = null;
 
       flipCounter += 1;
       flipIdRef.current = flipCounter;
@@ -198,7 +194,7 @@ const FlapCell = React.memo(function FlapCell({
       rotateX: -90,
       transition: {
         duration: flipDuration,
-        ease: [0.55, 0.055, 0.675, 0.19],
+        ease: "easeIn",
       },
     });
 
@@ -206,9 +202,9 @@ const FlapCell = React.memo(function FlapCell({
     void bottomControls.start({
       rotateX: 0,
       transition: {
-        duration: flipDuration * 0.85,
+        duration: flipDuration * 0.9,
         delay: bottomDelay,
-        ease: [0.33, 1.55, 0.64, 1],
+        ease: "easeOut",
       },
     });
 
@@ -223,14 +219,13 @@ const FlapCell = React.memo(function FlapCell({
     "absolute inset-x-0 flex select-none items-center justify-center font-bold tracking-tight";
   const topBg = state.accent?.top ?? "board-cell-surface";
   const bottomBg = state.accent?.bottom ?? "board-cell-surface";
-  const textColor = state.accent?.text ?? "text-primary glow-cyan";
+  const textColor = state.accent?.text ?? "text-primary";
   const flapTopBg = state.prevAccent?.top ?? "board-cell-flap";
-  const flapTextColor = state.prevAccent?.text ?? "text-primary glow-cyan";
-  const flipStyle = { "--flip-dur": `${flipDuration}s` } as React.CSSProperties;
+  const flapTextColor = state.prevAccent?.text ?? "text-primary";
 
   return (
     <div className="flap-cell flex aspect-3/6 flex-col overflow-hidden rounded-none border border-border">
-      <div className="relative flex-1 perspective-dramatic transform-3d bg-transparent">
+      <div className="relative flex-1 perspective-mid transform-3d bg-transparent">
         <div
           className={cn(
             "absolute inset-x-0 top-0 z-[1] h-[calc(50%-0.5px)] overflow-hidden",
@@ -255,13 +250,6 @@ const FlapCell = React.memo(function FlapCell({
           >
             {show}
           </div>
-          {isFlipping && (
-            <div
-              key={`shine-${state.flipId}`}
-              className="flap-shine-static pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.35),transparent_55%)]"
-              style={flipStyle}
-            />
-          )}
         </div>
 
         {flapsMounted.current && isFlipping && (
@@ -277,11 +265,6 @@ const FlapCell = React.memo(function FlapCell({
             >
               {showPrev}
             </div>
-            <div
-              key={`top-shadow-${state.flipId}`}
-              className="flap-top-shadow pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0),rgba(255,255,255,0.45))]"
-              style={flipStyle}
-            />
           </m.div>
         )}
 
@@ -298,11 +281,6 @@ const FlapCell = React.memo(function FlapCell({
             >
               {show}
             </div>
-            <div
-              key={`bottom-shadow-${state.flipId}`}
-              className="flap-bottom-shadow pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(255,255,255,0),rgba(255,255,255,0.3))]"
-              style={flipStyle}
-            />
           </m.div>
         )}
 
@@ -418,17 +396,7 @@ export function TextFlippingBoard({
   const colDelay = BASE_COL_DELAY * scale;
   const rowDelay = BASE_ROW_DELAY * scale;
   const stepMs = BASE_STEP_MS * scale;
-  const flipDur = Math.min(0.6, Math.max(0.15, BASE_FLIP_S * scale));
-
-  useEffect(() => {
-    if (text || rows) {
-      const delay = (duration + 0.2) * 1000;
-      const timer = setTimeout(() => {
-        playSuccessSound();
-      }, delay);
-      return () => clearTimeout(timer);
-    }
-  }, [text, rows, duration]);
+  const flipDur = Math.min(0.45, Math.max(0.12, BASE_FLIP_S * scale));
 
   const board = useMemo(() => {
     const grid: ParsedCell[][] = Array.from({ length: BOARD_ROWS }, () =>

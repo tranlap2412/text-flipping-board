@@ -15,7 +15,9 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ZING_API_ENABLED } from "@/lib/deploy";
 import { MUSIC_PRESETS } from "@/lib/music-presets";
+import { musicCopy } from "@/lib/content";
 import {
   getMusicPlaybackUrl,
   type MusicSelection,
@@ -90,7 +92,7 @@ export function MusicControls({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Music className="h-3.5 w-3.5 text-primary" />
-          <Label>Background music</Label>
+          <Label>{musicCopy.background}</Label>
         </div>
         <div className="flex items-center gap-2">
           <Label htmlFor="music-toggle" className="text-xs text-muted-foreground">
@@ -108,30 +110,31 @@ export function MusicControls({
       </div>
 
       <Tabs
-        value={selection.mode}
-        onValueChange={(mode) =>
+        value={ZING_API_ENABLED ? selection.mode : "preset"}
+        onValueChange={(mode) => {
+          if (!ZING_API_ENABLED) return;
           onSelectionChange({
             ...selection,
             mode: mode as MusicSelection["mode"],
-          })
-        }
+          });
+        }}
       >
-        <TabsList className="w-full">
-          <TabsTrigger value="preset" className="flex-1">
-            Presets
-          </TabsTrigger>
-          <TabsTrigger value="online" className="flex-1">
-            Zing MP3
-          </TabsTrigger>
-        </TabsList>
+        {ZING_API_ENABLED ? (
+          <TabsList className="w-full">
+            <TabsTrigger value="preset" className="flex-1">
+              Presets
+            </TabsTrigger>
+            <TabsTrigger value="online" className="flex-1">
+              Zing MP3
+            </TabsTrigger>
+          </TabsList>
+        ) : null}
 
         <TabsContent value="preset" className="mt-3 flex flex-col gap-2">
-          <p className="text-xs text-muted-foreground">
-            Royalty-free tracks by Kevin MacLeod (incompetech.com, CC BY 4.0).
-          </p>
+          <p className="text-xs text-muted-foreground">{musicCopy.presetsNote}</p>
           <Select value={selection.presetId} onValueChange={handlePresetChange}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a track" />
+              <SelectValue placeholder={musicCopy.selectTrack} />
             </SelectTrigger>
             <SelectContent>
               {MUSIC_PRESETS.map((item) => (
@@ -143,16 +146,15 @@ export function MusicControls({
           </Select>
         </TabsContent>
 
+        {ZING_API_ENABLED ? (
         <TabsContent value="online" className="mt-3 flex flex-col gap-2">
           <div className="flex items-center gap-1.5">
             <Globe className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">
-              Search Vietnamese tracks on Zing MP3
-            </span>
+            <span className="text-xs text-muted-foreground">{musicCopy.zingHint}</span>
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="Song or artist name..."
+              placeholder={musicCopy.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -170,7 +172,7 @@ export function MusicControls({
               disabled={isSearching}
             >
               <Search data-icon="inline-start" />
-              {isSearching ? "..." : "Search"}
+              {isSearching ? "…" : musicCopy.search}
             </Button>
           </div>
 
@@ -220,6 +222,7 @@ export function MusicControls({
             </div>
           )}
         </TabsContent>
+        ) : null}
       </Tabs>
 
       <BackgroundMusicPlayer

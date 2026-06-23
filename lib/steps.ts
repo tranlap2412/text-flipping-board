@@ -11,8 +11,9 @@ export interface StepsPayload {
   autoInterval?: number;
 }
 
-export const DEFAULT_WELCOME_TEXT =
-  "THE GRID IS LISTENING\n\nTURN THOUGHTS INTO\nFLIPPING LIGHT\n\nCOMPOSE ON THE LEFT";
+import { welcomeBoardText } from "@/lib/content";
+
+export const DEFAULT_WELCOME_TEXT = welcomeBoardText;
 
 export function createStep(text = ""): BoardStep {
   const id =

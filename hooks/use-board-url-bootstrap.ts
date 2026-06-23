@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { ZING_API_ENABLED } from "@/lib/deploy";
 import { parseBoardSearchParams } from "@/lib/share-url";
 import type { MusicSelection } from "@/lib/music-types";
 import type { BoardStep, StepAdvanceMode } from "@/lib/steps";
@@ -15,6 +16,7 @@ interface BoardUrlBootstrapOptions {
   onStepIndex: (index: number) => void;
   onCinematic: (enabled: boolean) => void;
   onSharedView: (enabled: boolean) => void;
+  onPasswordHash: (hash: string | null) => void;
 }
 
 export function useBoardUrlBootstrap({
@@ -23,6 +25,7 @@ export function useBoardUrlBootstrap({
   onStepIndex,
   onCinematic,
   onSharedView,
+  onPasswordHash,
 }: BoardUrlBootstrapOptions): void {
   useEffect(() => {
     const parsed = parseBoardSearchParams(
@@ -38,7 +41,11 @@ export function useBoardUrlBootstrap({
       onMusicSelection(parsed.musicSelection);
 
       const song = parsed.musicSelection.onlineSong;
-      if (parsed.musicSelection.mode === "online" && song) {
+      if (
+        ZING_API_ENABLED &&
+        parsed.musicSelection.mode === "online" &&
+        song
+      ) {
         fetch(`/api/zing/song?id=${encodeURIComponent(song.id)}`)
           .then((res) => res.json())
           .then((body) => {
@@ -61,6 +68,8 @@ export function useBoardUrlBootstrap({
     if (parsed.cinematic) {
       onCinematic(true);
     }
+
+    onPasswordHash(parsed.passwordHash);
     // Run once on mount to hydrate from share URL.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

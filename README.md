@@ -1,14 +1,17 @@
 # AetherGate Flip-Board
 
-Split-flap message studio built with Next.js. Compose multi-step messages, tune flip speed and sound, add background music, then play fullscreen or share a cinematic link.
+A split-flap message studio — compose multi-step messages, tune flip speed and sound, add music, then play fullscreen or share a cinematic link. Optional password protection for shared links.
+
+**Live:** [text-flipping-board.vercel.app](https://text-flipping-board.vercel.app)  
+**Repo:** [github.com/tranlap2412/text-flipping-board](https://github.com/tranlap2412/text-flipping-board)
 
 ## Features
 
-- 6×22 split-flap board with Vietnamese diacritic support
+- 6×22 split-flap board with **Vietnamese diacritic** support
 - Multi-step messages with manual or auto advance
-- Click sound, flip speed, and music presets (plus Zing MP3 search)
+- Click sound, flip speed, music presets, and Zing MP3 search
 - Fullscreen cinematic playback
-- Shareable URLs (`?data=…&view=cinematic&music=…`)
+- Shareable URLs with optional **password lock** (`?data=…&view=cinematic&music=…&lock=…`)
 
 ## Local development
 
@@ -21,25 +24,18 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Deploy on Vercel
 
-1. Push this repo to GitHub (or GitLab / Bitbucket).
-2. Import the project in [Vercel](https://vercel.com/new).
-3. Framework preset: **Next.js** (auto-detected).
-4. Build command: `yarn build` · Install command: `yarn install` · Output: default.
-5. Deploy.
+1. Push to [github.com/tranlap2412/text-flipping-board](https://github.com/tranlap2412/text-flipping-board).
+2. Import the project in [Vercel](https://vercel.com/new) — **Next.js** is auto-detected.
+3. Build: `yarn build` · Install: `yarn install`.
+4. Add environment variable (recommended):
 
-### Environment variables (optional)
-
-| Variable | Description |
+| Variable | Value |
 | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | Production URL for metadata, Open Graph, sitemap, and canonical links. Example: `https://flip-board.vercel.app`. Vercel sets `VERCEL_URL` automatically; set this when using a custom domain. |
+| `NEXT_PUBLIC_SITE_URL` | `https://text-flipping-board.vercel.app` |
 
-Copy `.env.example` to `.env.local` for local overrides.
+5. Deploy. Zing MP3 routes (`/api/zing/*`) run as serverless functions automatically.
 
-### After deploy
-
-- Set `NEXT_PUBLIC_SITE_URL` to your custom domain if you add one.
-- Share links encode board state in the URL — no database required.
-- Zing MP3 routes (`/api/zing/*`) run as serverless functions on Vercel.
+No database required — share links encode board state in the URL.
 
 ## Scripts
 

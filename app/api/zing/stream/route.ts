@@ -1,5 +1,4 @@
 import { Readable } from "node:stream";
-import { NextResponse } from "next/server";
 import { getZingClient } from "@/lib/zing-client";
 
 export async function GET(request: Request) {
@@ -7,7 +6,7 @@ export async function GET(request: Request) {
   const id = searchParams.get("id")?.trim();
 
   if (!id) {
-    return NextResponse.json(
+    return Response.json(
       { success: false, error: "Query parameter 'id' is required" },
       { status: 400 },
     );
@@ -25,7 +24,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Zing stream error:", error);
-    return NextResponse.json(
+    return Response.json(
       {
         success: false,
         error: error instanceof Error ? error.message : "Stream failed",

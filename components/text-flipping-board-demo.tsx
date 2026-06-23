@@ -8,6 +8,8 @@ import {
   type MusicSelection,
 } from "@/lib/music-types";
 import { buildShareUrl } from "@/lib/share-url";
+import { hashSharePassword, readStoredUnlock } from "@/lib/share-password";
+import { shareCopy } from "@/lib/content";
 import {
   createDefaultSteps,
   createStep,
@@ -15,6 +17,7 @@ import {
   type StepAdvanceMode,
 } from "@/lib/steps";
 import { CinematicView } from "@/components/demo/cinematic-view";
+import { SharePasswordGate } from "@/components/demo/share-password-gate";
 import { DashboardView } from "@/components/demo/dashboard-view";
 import { Button } from "@/components/ui/button";
 
@@ -43,6 +46,10 @@ export default function TextFlippingBoardDemo() {
   const [musicBlocked, setMusicBlocked] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [sharePasswordEnabled, setSharePasswordEnabled] = useState(false);
+  const [sharePassword, setSharePassword] = useState("");
+  const [sharedLockHash, setSharedLockHash] = useState<string | null>(null);
+  const [isShareUnlocked, setIsShareUnlocked] = useState(false);
 
   const previewBoardText = previewSteps[previewStepIndex]?.text ?? "";
   const boardText = renderedSteps[boardStepIndex]?.text ?? "";
@@ -87,8 +94,17 @@ export default function TextFlippingBoardDemo() {
     },
     onMusicSelection: setMusicSelection,
     onStepIndex: setBoardStepIndex,
-    onCinematic: setIsCinematic,
+    onCinematic: (enabled) => {
+      setIsCinematic(enabled);
+      if (enabled) requestMusicPlay();
+    },
     onSharedView: setIsSharedView,
+    onPasswordHash: (hash) => {
+      setSharedLockHash(hash);
+      if (hash && readStoredUnlock(hash)) {
+        setIsShareUnlocked(true);
+      }
+    },
   });
 
   useEffect(() => {
@@ -153,7 +169,19 @@ export default function TextFlippingBoardDemo() {
     });
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
+    if (sharePasswordEnabled && !sharePassword.trim()) {
+      setToastMessage(shareCopy.setPasswordFirst);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2500);
+      return;
+    }
+
+    let passwordHash: string | null = null;
+    if (sharePasswordEnabled && sharePassword.trim()) {
+      passwordHash = await hashSharePassword(sharePassword);
+    }
+
     const shareUrl = buildShareUrl(
       window.location.origin,
       window.location.pathname,
@@ -161,17 +189,18 @@ export default function TextFlippingBoardDemo() {
       advanceMode,
       autoInterval,
       musicSelection,
+      passwordHash,
     );
 
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => {
-        setToastMessage("Share link copied!");
+        setToastMessage(shareCopy.linkCopied);
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
       })
       .catch(() => {
-        setToastMessage("Could not copy link");
+        setToastMessage(shareCopy.linkCopyFailed);
         setShowToast(true);
         setTimeout(() => setShowToast(false), 2000);
       });
@@ -204,6 +233,21 @@ export default function TextFlippingBoardDemo() {
   };
 
   if (isCinematic) {
+    const needsPassword =
+      isSharedView && sharedLockHash && !isShareUnlocked;
+
+    if (needsPassword) {
+      return (
+        <SharePasswordGate
+          lockHash={sharedLockHash}
+          onUnlock={() => {
+            setIsShareUnlocked(true);
+            requestMusicPlay();
+          }}
+        />
+      );
+    }
+
     return (
       <>
         <CinematicView
@@ -223,6 +267,7 @@ export default function TextFlippingBoardDemo() {
           onStepNext={handleBoardStepNext}
           onPlayRequest={requestMusicPlay}
           onPlayBlocked={() => setMusicBlocked(true)}
+          onPlayStarted={() => setMusicBlocked(false)}
         />
         {!isSharedView && (
           <Button
@@ -275,6 +320,10 @@ export default function TextFlippingBoardDemo() {
       onPlayMusicChange={setPlayMusic}
       onPlayRequest={requestMusicPlay}
       onPlayBlocked={() => setMusicBlocked(true)}
+      sharePasswordEnabled={sharePasswordEnabled}
+      sharePassword={sharePassword}
+      onSharePasswordEnabledChange={setSharePasswordEnabled}
+      onSharePasswordChange={setSharePassword}
     />
   );
 }

@@ -117,7 +117,11 @@
   --sidebar-border: oklch(0.55 0.08 250 / 0.22);
   --sidebar-ring: oklch(0.72 0.13 195);
   --board-cell: color-mix(in oklch, var(--primary) 14%, color-mix(in oklch, var(--secondary) 65%, transparent));
-  --board-cell-flap: color-mix(in oklch, var(--accent) 32%, color-mix(in oklch, var(--secondary) 58%, transparent));
+  --board-cell-flap: color-mix(in oklch, var(--primary) 18%, color-mix(in oklch, var(--secondary) 62%, transparent));
+}
+
+.perspective-mid {
+  perspective: 520px;
 }
 
 @layer base {
