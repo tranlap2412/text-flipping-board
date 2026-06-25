@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Noto_Sans_Mono } from "next/font/google";
+import { Be_Vietnam_Pro, Geist, Geist_Mono, Noto_Sans_Mono } from "next/font/google";
 import { siteConfig } from "@/lib/site-config";
 import "./globals.css";
 
@@ -15,6 +15,12 @@ const geistMono = Geist_Mono({
 
 const notoSansMono = Noto_Sans_Mono({
   variable: "--font-noto-sans-mono",
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const beVietnamPro = Be_Vietnam_Pro({
+  variable: "--font-be-vietnam",
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600", "700"],
 });
@@ -82,7 +88,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${notoSansMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${notoSansMono.variable} ${beVietnamPro.variable} antialiased`}
       >
         {children}
       </body>

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useLayoutEffect } from "react";
 import { useBoardUrlBootstrap } from "@/hooks/use-board-url-bootstrap";
+import { MusicPlaybackProvider } from "@/components/music-playback-context";
 import { toggleSound, isSoundEnabled } from "@/lib/audio";
 import {
   DEFAULT_MUSIC_SELECTION,
+  getMusicPlaybackUrl,
   type MusicSelection,
 } from "@/lib/music-types";
 import { buildShareUrl } from "@/lib/share-url";
@@ -53,6 +55,7 @@ export default function TextFlippingBoardDemo() {
 
   const previewBoardText = previewSteps[previewStepIndex]?.text ?? "";
   const boardText = renderedSteps[boardStepIndex]?.text ?? "";
+  const playbackUrl = getMusicPlaybackUrl(musicSelection);
 
   const isStepDirty = useCallback(
     (index: number) =>
@@ -117,6 +120,10 @@ export default function TextFlippingBoardDemo() {
       }
     },
   });
+
+  useLayoutEffect(() => {
+    if (playMusic) requestMusicPlay();
+  }, []);
 
   useEffect(() => {
     toggleSound(true);
@@ -241,6 +248,14 @@ export default function TextFlippingBoardDemo() {
     setSoundOn(toggleSound(enabled));
   };
 
+  const handleMusicSelectionChange = useCallback(
+    (selection: MusicSelection) => {
+      setMusicSelection(selection);
+      if (playMusic) requestMusicPlay();
+    },
+    [playMusic, requestMusicPlay],
+  );
+
   const enterCinematic = () => {
     const snapshot = cloneSteps(steps);
     setRenderedSteps(snapshot);
@@ -263,97 +278,96 @@ export default function TextFlippingBoardDemo() {
     }
   };
 
-  if (isCinematic) {
-    const needsPassword =
-      isSharedView && sharedLockHash && !isShareUnlocked;
+  const needsPassword =
+    isSharedView && Boolean(sharedLockHash) && !isShareUnlocked;
+  const musicShouldPlay = playMusic && !needsPassword;
 
-    if (needsPassword) {
-      return (
+  return (
+    <MusicPlaybackProvider
+      url={playbackUrl}
+      playing={musicShouldPlay}
+      playTrigger={playTrigger}
+      onPlayBlocked={handleMusicPlayBlocked}
+      onPlayStarted={handleMusicPlayStarted}
+    >
+      {needsPassword ? (
         <SharePasswordGate
-          lockHash={sharedLockHash}
+          lockHash={sharedLockHash!}
           onUnlock={() => {
             setIsShareUnlocked(true);
             requestMusicPlay();
           }}
         />
-      );
-    }
-
-    return (
-      <>
-        <CinematicView
-          boardText={boardText}
-          duration={duration}
-          stepIndex={boardStepIndex}
-          totalSteps={renderedSteps.length}
+      ) : isCinematic ? (
+        <>
+          <CinematicView
+            boardText={boardText}
+            duration={duration}
+            stepIndex={boardStepIndex}
+            totalSteps={renderedSteps.length}
+            advanceMode={advanceMode}
+            autoInterval={autoInterval}
+            musicSelection={musicSelection}
+            playMusic={musicShouldPlay}
+            showToast={showToast}
+            toastMessage={toastMessage}
+            onStepPrev={handleBoardStepPrev}
+            onStepNext={handleBoardStepNext}
+            onPlayRequest={requestMusicPlay}
+          />
+          {!isSharedView && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={exitCinematic}
+              className="fixed top-4 left-4 z-30 opacity-30 hover:opacity-100"
+            >
+              ← Edit
+            </Button>
+          )}
+        </>
+      ) : (
+        <DashboardView
+          steps={steps}
+          activeStepIndex={activeStepIndex}
+          previewStepIndex={previewStepIndex}
+          previewBoardText={previewBoardText}
+          isPreviewDirty={isPreviewDirty}
+          isActiveStepDirty={isActiveStepDirty}
+          isStepDirty={isStepDirty}
           advanceMode={advanceMode}
           autoInterval={autoInterval}
+          duration={duration}
+          soundOn={soundOn}
           musicSelection={musicSelection}
           playMusic={playMusic}
-          playTrigger={playTrigger}
           showToast={showToast}
           toastMessage={toastMessage}
-          onStepPrev={handleBoardStepPrev}
-          onStepNext={handleBoardStepNext}
+          onActiveStepIndexChange={handleActiveStepIndexChange}
+          onStepTextChange={handleStepTextChange}
+          onStepBlur={handleStepBlur}
+          onSaveToPreview={handleSaveToPreview}
+          onAddStep={handleAddStep}
+          onRemoveStep={handleRemoveStep}
+          onAdvanceModeChange={setAdvanceMode}
+          onAutoIntervalChange={setAutoInterval}
+          onPreviewStepPrev={handlePreviewStepPrev}
+          onPreviewStepNext={handlePreviewStepNext}
+          onShare={handleShare}
+          onCinematic={enterCinematic}
+          onDurationChange={setDuration}
+          onSoundToggle={handleSoundToggle}
+          onMusicSelectionChange={handleMusicSelectionChange}
+          onPlayMusicChange={setPlayMusic}
           onPlayRequest={requestMusicPlay}
-          onPlayBlocked={handleMusicPlayBlocked}
-          onPlayStarted={handleMusicPlayStarted}
+          sharePasswordEnabled={sharePasswordEnabled}
+          sharePassword={sharePassword}
+          onSharePasswordEnabledChange={setSharePasswordEnabled}
+          onSharePasswordChange={setSharePassword}
         />
-        {!isSharedView && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="xs"
-            onClick={exitCinematic}
-            className="fixed top-4 left-4 z-30 opacity-30 hover:opacity-100"
-          >
-            ← Edit
-          </Button>
-        )}
-      </>
-    );
-  }
+      )}
 
-  return (
-    <DashboardView
-      steps={steps}
-      activeStepIndex={activeStepIndex}
-      previewStepIndex={previewStepIndex}
-      previewBoardText={previewBoardText}
-      isPreviewDirty={isPreviewDirty}
-      isActiveStepDirty={isActiveStepDirty}
-      isStepDirty={isStepDirty}
-      advanceMode={advanceMode}
-      autoInterval={autoInterval}
-      duration={duration}
-      soundOn={soundOn}
-      musicSelection={musicSelection}
-      playMusic={playMusic}
-      playTrigger={playTrigger}
-      showToast={showToast}
-      toastMessage={toastMessage}
-      onActiveStepIndexChange={handleActiveStepIndexChange}
-      onStepTextChange={handleStepTextChange}
-      onStepBlur={handleStepBlur}
-      onSaveToPreview={handleSaveToPreview}
-      onAddStep={handleAddStep}
-      onRemoveStep={handleRemoveStep}
-      onAdvanceModeChange={setAdvanceMode}
-      onAutoIntervalChange={setAutoInterval}
-      onPreviewStepPrev={handlePreviewStepPrev}
-      onPreviewStepNext={handlePreviewStepNext}
-      onShare={handleShare}
-      onCinematic={enterCinematic}
-      onDurationChange={setDuration}
-      onSoundToggle={handleSoundToggle}
-      onMusicSelectionChange={setMusicSelection}
-      onPlayMusicChange={setPlayMusic}
-      onPlayRequest={requestMusicPlay}
-      onPlayBlocked={handleMusicPlayBlocked}
-      sharePasswordEnabled={sharePasswordEnabled}
-      sharePassword={sharePassword}
-      onSharePasswordEnabledChange={setSharePasswordEnabled}
-      onSharePasswordChange={setSharePassword}
-    />
+    </MusicPlaybackProvider>
   );
 }

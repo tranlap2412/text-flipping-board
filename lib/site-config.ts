@@ -1,6 +1,6 @@
 import { siteCopy } from "@/lib/content";
 
-const productionUrl = "https://cloudcenter.vn";
+const productionUrl = "https://music.cloudcenter.vn";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? productionUrl;
 

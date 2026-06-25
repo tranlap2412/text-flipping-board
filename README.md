@@ -2,7 +2,7 @@
 
 A split-flap message studio — compose multi-step messages, tune flip speed and sound, add music, then play fullscreen or share a cinematic link. Optional password protection for shared links.
 
-**Live:** [cloudcenter.vn](https://cloudcenter.vn)  
+**Live:** [music.cloudcenter.vn](https://music.cloudcenter.vn)  
 **Repo:** [github.com/tranlap2412/text-flipping-board](https://github.com/tranlap2412/text-flipping-board)
 
 ## Features
@@ -31,25 +31,28 @@ yarn install
 yarn build
 ```
 
+Per [Next.js standalone output](https://nextjs.org/docs/app/api-reference/config/next-config-js/output), `yarn build` runs `next build` then copies `public/` and `.next/static/` into `.next/standalone/` before zipping.
+
 This produces:
 
-- `.next/standalone/` — run directly on the server
-- `dist/text-flipping-board-v{version}-{YYYYMMDD}.zip` — upload this to VPS
+- `.next/standalone/` — ready to run with `node server.js`
+- `dist/text-flipping-board-v{version}-{YYYYMMDD}.zip` — upload to VPS
 
 On the server:
 
 ```bash
 unzip text-flipping-board-v0.1.0-20250623.zip
 cd standalone
-PORT=3000 node server.js
+PORT=3000 HOSTNAME=0.0.0.0 node server.js
 ```
 
 Optional env:
 
-| Variable               | Value                         |
-| ---------------------- | ----------------------------- |
-| `NEXT_PUBLIC_SITE_URL` | `https://cloudcenter.vn`      |
-| `PORT`                 | `3000` (or your reverse proxy)|
+| Variable               | Value                              |
+| ---------------------- | ---------------------------------- |
+| `NEXT_PUBLIC_SITE_URL` | `https://music.cloudcenter.vn`     |
+| `PORT`                 | `3000` (or your reverse proxy)   |
+| `HOSTNAME`             | `0.0.0.0` (listen on all interfaces)|
 
 Put nginx/Caddy in front for HTTPS.
 

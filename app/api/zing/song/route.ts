@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getZingClient } from "@/lib/zing-client";
+import { checkZingLyricsAvailable } from "@/lib/zing-lyric-fetch";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -14,6 +15,7 @@ export async function GET(request: Request) {
 
   try {
     const song = await getZingClient().mediaDetails(id);
+    const hasLyric = await checkZingLyricsAvailable(id);
 
     return NextResponse.json({
       success: true,
@@ -22,6 +24,7 @@ export async function GET(request: Request) {
         name: song.name,
         artist: song.artists.map((artist) => artist.name).join(", "),
         thumbnail: song.thumbnail?.w94 ?? null,
+        hasLyric,
       },
     });
   } catch (error) {

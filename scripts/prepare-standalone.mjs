@@ -1,3 +1,11 @@
+/**
+ * Post-build step for Next.js standalone output.
+ * @see https://nextjs.org/docs/app/api-reference/config/next-config-js/output
+ *
+ * After `next build`, copy assets the minimal server.js does not include:
+ *   cp -r public .next/standalone/
+ *   cp -r .next/static .next/standalone/.next/
+ */
 import { cpSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -7,7 +15,7 @@ const standaloneDir = join(root, ".next/standalone");
 const distDir = join(root, "dist");
 
 if (!existsSync(standaloneDir)) {
-  console.error("Missing .next/standalone — run `next build` first.");
+  console.error("Missing .next/standalone — run `next build` with output: 'standalone' first.");
   process.exit(1);
 }
 
@@ -36,8 +44,10 @@ if (zip.status !== 0) {
 }
 
 console.log("");
-console.log("Standalone bundle: .next/standalone/");
-console.log(`Archive:           dist/${archiveBase}.zip`);
-console.log("Deploy:");
-console.log(`  unzip ${archiveBase}.zip`);
-console.log("  cd standalone && PORT=3000 node server.js");
+console.log("Standalone ready:  .next/standalone/");
+console.log(`Deploy archive:    dist/${archiveBase}.zip`);
+console.log("Run locally:");
+console.log("  node .next/standalone/server.js");
+console.log("On VPS after unzip:");
+console.log("  cd standalone");
+console.log("  PORT=3000 HOSTNAME=0.0.0.0 node server.js");

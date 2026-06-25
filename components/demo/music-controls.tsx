@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Globe, Music, Search } from "lucide-react";
-import { BackgroundMusicPlayer } from "@/components/background-music-player";
+import { useEffect, useState } from "react";
+import { Globe, Mic2, Music, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +17,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MUSIC_PRESETS } from "@/lib/music-presets";
 import { musicCopy } from "@/lib/content";
 import {
-  getMusicPlaybackUrl,
   type MusicSelection,
   type OnlineSong,
 } from "@/lib/music-types";
@@ -26,26 +24,61 @@ import {
 interface MusicControlsProps {
   selection: MusicSelection;
   playing: boolean;
-  playTrigger: number;
   onSelectionChange: (selection: MusicSelection) => void;
   onPlayingChange: (playing: boolean) => void;
   onPlayRequest: () => void;
-  onPlayBlocked: () => void;
+}
+
+function LyricBadge() {
+  return (
+    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-none border border-primary/30 px-1 py-0.5 text-[9px] font-semibold tracking-[0.14em] text-primary uppercase">
+      <Mic2 className="size-2.5" />
+      {musicCopy.hasLyric}
+    </span>
+  );
 }
 
 export function MusicControls({
   selection,
   playing,
-  playTrigger,
   onSelectionChange,
   onPlayingChange,
   onPlayRequest,
-  onPlayBlocked,
 }: MusicControlsProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<OnlineSong[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const playbackUrl = getMusicPlaybackUrl(selection);
+
+  useEffect(() => {
+    const song = selection.onlineSong;
+    if (selection.mode !== "online" || !song || song.hasLyric !== undefined) {
+      return;
+    }
+
+    let cancelled = false;
+
+    fetch(`/api/zing/song?id=${encodeURIComponent(song.id)}`)
+      .then((res) => res.json())
+      .then((body) => {
+        if (cancelled || !body.success || !body.data) return;
+        onSelectionChange({
+          mode: "online",
+          presetId: selection.presetId,
+          onlineSong: body.data as OnlineSong,
+        });
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    selection.mode,
+    selection.presetId,
+    selection.onlineSong?.id,
+    selection.onlineSong?.hasLyric,
+    onSelectionChange,
+  ]);
 
   const handlePresetChange = (presetId: string) => {
     onSelectionChange({
@@ -142,89 +175,83 @@ export function MusicControls({
         </TabsContent>
 
         <TabsContent value="online" className="mt-3 flex flex-col gap-2">
-            <div className="flex items-center gap-1.5">
-              <Globe className="h-3 w-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">{musicCopy.zingHint}</span>
-            </div>
-            <div className="flex gap-2">
-              <Input
-                placeholder={musicCopy.searchPlaceholder}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSearch();
-                  }
-                }}
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={handleSearch}
-                disabled={isSearching}
-              >
-                <Search data-icon="inline-start" />
-                {isSearching ? "…" : musicCopy.search}
-              </Button>
-            </div>
+          <div className="flex items-center gap-1.5">
+            <Globe className="h-3 w-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">{musicCopy.zingHint}</span>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              placeholder={musicCopy.searchPlaceholder}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSearch();
+                }
+              }}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleSearch}
+              disabled={isSearching}
+            >
+              <Search data-icon="inline-start" />
+              {isSearching ? "…" : musicCopy.search}
+            </Button>
+          </div>
 
-            {selection.onlineSong && (
-              <p className="text-xs text-muted-foreground">
-                Selected:{" "}
-                <span className="font-semibold text-foreground">
-                  {selection.onlineSong.name}
-                </span>
-                <span> — {selection.onlineSong.artist}</span>
-              </p>
-            )}
+          {selection.onlineSong && (
+            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
+              <span>Selected:</span>
+              <span className="font-semibold text-foreground">
+                {selection.onlineSong.name}
+              </span>
+              <span>— {selection.onlineSong.artist}</span>
+              {selection.onlineSong.hasLyric && <LyricBadge />}
+            </div>
+          )}
 
-            {searchResults.length > 0 && (
-              <div className="custom-scrollbar flex max-h-40 flex-col gap-1 overflow-y-auto rounded-none border border-border/50 bg-muted/20 p-1">
-                {searchResults.map((song) => (
-                  <button
-                    key={song.id}
-                    type="button"
-                    onClick={() => handleOnlineSelect(song)}
-                    className={`flex cursor-pointer items-center gap-2 rounded-none px-2 py-1.5 text-left transition-colors ${selection.onlineSong?.id === song.id
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
-                  >
-                    {song.thumbnail ? (
-                      <img
-                        src={song.thumbnail}
-                        alt={song.name}
-                        className="h-7 w-7 rounded-none border border-border object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-7 w-7 items-center justify-center rounded-none border border-border bg-muted">
-                        <Music className="h-3.5 w-3.5 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="flex min-w-0 flex-1 flex-col">
-                      <span className="truncate text-xs font-semibold leading-tight">
-                        {song.name}
-                      </span>
-                      <span className="truncate text-[10px] leading-none opacity-75">
-                        {song.artist}
-                      </span>
+          {searchResults.length > 0 && (
+            <div className="custom-scrollbar flex max-h-40 flex-col gap-1 overflow-y-auto rounded-none border border-border/50 bg-muted/20 p-1">
+              {searchResults.map((song) => (
+                <button
+                  key={song.id}
+                  type="button"
+                  onClick={() => handleOnlineSelect(song)}
+                  className={`flex cursor-pointer items-center gap-2 rounded-none px-2 py-1.5 text-left transition-colors ${selection.onlineSong?.id === song.id
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                >
+                  {song.thumbnail ? (
+                    <img
+                      src={song.thumbnail}
+                      alt={song.name}
+                      className="h-7 w-7 rounded-none border border-border object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-7 w-7 items-center justify-center rounded-none border border-border bg-muted">
+                      <Music className="h-3.5 w-3.5 text-muted-foreground" />
                     </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </TabsContent>
+                  )}
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-xs font-semibold leading-tight">
+                      {song.name}
+                    </span>
+                    <span className="truncate text-[10px] leading-none opacity-75">
+                      {song.artist}
+                    </span>
+                  </div>
+                  {song.hasLyric && <LyricBadge />}
+                </button>
+              ))}
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
-
-      <BackgroundMusicPlayer
-        url={playbackUrl}
-        playing={playing}
-        playTrigger={playTrigger}
-        onPlayBlocked={onPlayBlocked}
-        hidden
-      />
     </div>
   );
 }

@@ -95,4 +95,5 @@ export const musicCopy = {
   zingHint: "Search Vietnamese tracks on Zing MP3",
   searchPlaceholder: "Song or artist…",
   search: "Search",
+  hasLyric: "Lyric",
 } as const;

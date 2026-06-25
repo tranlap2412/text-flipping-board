@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && node scripts/prepare-standalone.mjs",
+    "build": "NEXT_PUBLIC_SITE_URL=https://music.cloudcenter.vn next build && node scripts/prepare-standalone.mjs",
     "start:standalone": "node .next/standalone/server.js",
     "lint": "eslint"
   },

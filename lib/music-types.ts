@@ -11,6 +11,7 @@ export interface OnlineSong {
   name: string;
   artist: string;
   thumbnail?: string | null;
+  hasLyric?: boolean;
 }
 
 export interface MusicSelection {
